@@ -52,11 +52,18 @@ impl PublicKeyed<PublicKey> for Ed25519CosmosAppSigner {
 impl Signer<Signature> for Ed25519CosmosAppSigner {
     /// c: Compute a compact, fixed-sized signature of the given amino/json vote
     fn sign(&self, msg: &[u8]) -> Result<Signature, Error> {
+        println!("Ledger is trying to sign: {:?}", msg);
         let app = self.app.lock().unwrap();
 
         match app.sign(&msg) {
-            Ok(sig) => Ok(Signature(sig)),
-            Err(err) => Err(Error::new(ErrorKind::ProviderError, Some(&err.to_string()))),
+            Ok(sig) => {
+                println!("Receied an okay signature");
+                Ok(Signature(sig))
+            },
+            Err(err) => {
+                println!("Received an error");
+                Err(Error::new(ErrorKind::ProviderError, Some(&err.to_string())))
+            }
         }
     }
 }
@@ -66,6 +73,7 @@ mod tests {
     use crate::Ed25519CosmosAppSigner;
 
     #[test]
+    #[ignore]
     fn public_key() {
         use signatory::PublicKeyed;
         let signer = Ed25519CosmosAppSigner::connect().unwrap();
@@ -84,9 +92,9 @@ mod tests {
         // Sign message1
         let some_message1 = [
             0x8,  // (field_number << 3) | wire_type
-            0x1,  // PrevoteType
+            0x20,  // Proposal
             0x11, // (field_number << 3) | wire_type
-            0x10, 0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // height
+            0x43, 0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // height
             0x19, // (field_number << 3) | wire_type
             0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // round
             0x22, // (field_number << 3) | wire_type
@@ -94,8 +102,11 @@ mod tests {
             0xb, 0x8, 0x80, 0x92, 0xb8, 0xc3, 0x98, 0xfe, 0xff, 0xff, 0xff, 0x1,
         ];
 
+        println!("first");
         match signer.sign(&some_message1) {
-            Ok(_sig) => {}
+            Ok(sig) => {
+                println!("Sig {:#?}", sig);
+            },
             Err(e) => {
                 println!("Err {:#?}", e);
             }
@@ -106,7 +117,7 @@ mod tests {
             0x8,  // (field_number << 3) | wire_type
             0x1,  // PrevoteType
             0x11, // (field_number << 3) | wire_type
-            0x10, 0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // height
+            0x50, 0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // height
             0x19, // (field_number << 3) | wire_type
             0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,  // round
             0x22, // (field_number << 3) | wire_type
@@ -114,8 +125,11 @@ mod tests {
             0xb, 0x8, 0x80, 0x92, 0xb8, 0xc3, 0x98, 0xfe, 0xff, 0xff, 0xff, 0x1,
         ];
 
+        println!("second");
         match signer.sign(&some_message2) {
-            Ok(_sig) => {}
+            Ok(sig) => {
+                println!("Sig {:#?}", sig);
+            },
             Err(e) => {
                 println!("Err {:#?}", e);
             }
@@ -123,6 +137,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn sign2() {
         use signatory::Signer;
 
@@ -170,6 +185,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn sign_many() {
         use signatory::PublicKeyed;
         use signatory::Signer;
