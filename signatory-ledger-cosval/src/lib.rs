@@ -7,6 +7,8 @@
     html_root_url = "https://docs.rs/signatory-ledger-cosval/0.11.0-pre"
 )]
 
+extern crate signatory;
+
 use std::sync::{Arc, Mutex};
 
 use signatory::{
