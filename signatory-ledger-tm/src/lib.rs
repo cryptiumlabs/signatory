@@ -60,24 +60,36 @@ impl Signer<Signature> for Ed25519LedgerTmAppSigner {
 }
 
 #[cfg(test)]
+#[macro_use]
+extern crate lazy_static;
+
+#[cfg(test)]
 mod tests {
+    use std::sync::Mutex;
     use crate::Ed25519LedgerTmAppSigner;
 
+    lazy_static! {
+        static ref SIGNER: Mutex<Ed25519LedgerTmAppSigner> =
+            Mutex::new(Ed25519LedgerTmAppSigner::connect().unwrap());
+    }
+
     #[test]
-    fn public_key() {
+
+    fn public_key() {        
         use signatory::PublicKeyed;
-        let signer = Ed25519LedgerTmAppSigner::connect().unwrap();
+
+        let signer = SIGNER.lock().unwrap();
 
         let _pk = signer.public_key().unwrap();
         println!("PK {:0X?}", _pk);
     }
 
     #[test]
+    #[ignore]
     fn sign() {
-        use crate::Ed25519LedgerTmAppSigner;
         use signatory::Signer;
 
-        let signer = Ed25519LedgerTmAppSigner::connect().unwrap();
+        let signer = SIGNER.lock().unwrap();
 
         // Sign message1
         let some_message1 = [
@@ -99,7 +111,7 @@ mod tests {
     fn sign2() {
         use signatory::Signer;
 
-        let signer = Ed25519LedgerTmAppSigner::connect().unwrap();
+        let signer = SIGNER.lock().unwrap();
 
         // Sign message1
         let some_message1 = [
@@ -133,12 +145,12 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn sign_many() {
         use signatory::PublicKeyed;
         use signatory::Signer;
-        use Ed25519LedgerTmAppSigner;
 
-        let signer = Ed25519LedgerTmAppSigner::connect().unwrap();
+        let signer = SIGNER.lock().unwrap();
 
         // Get public key to initialize
         let _pk = signer.public_key().unwrap();
